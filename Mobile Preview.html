@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Linda · Anteprima Mobile</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0;
+      font-family: 'Inter', system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      background: #161618;
+    }
+
+    /* ── Top bar ── */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 32px;
+      background: rgba(22,22,24,0.92);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+    .topbar-logo { font-size: 20px; font-weight: 500; color: rgba(255,255,255,0.75); letter-spacing: -0.03em; }
+    .topbar-title { font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(255,255,255,0.35); }
+    .topbar-badge { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.07); padding: 5px 10px; border-radius: 999px; }
+
+    /* ── Stage ── */
+    .stage {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 48px 24px 72px;
+      gap: 64px;
+      flex-wrap: wrap;
+    }
+
+    /* ── Phone wrap ── */
+    .phone-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+    .phone-label {
+      font-size: 11px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.25);
+    }
+    .scroll-hint {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: rgba(255,255,255,0.2);
+      animation: bob 2s ease-in-out infinite;
+    }
+    @keyframes bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(3px)} }
+
+    /* ── iPhone 16 Pro bezel ── */
+    .iphone {
+      position: relative;
+      width: 393px;
+      height: 852px;
+      background: #1c1c1e;
+      border-radius: 54px;
+      box-shadow:
+        0 0 0 1.5px rgba(255,255,255,0.14),
+        0 0 0 11px #090909,
+        0 0 0 12.5px rgba(255,255,255,0.07),
+        0 56px 120px -20px rgba(0,0,0,0.9),
+        0 24px 40px -8px rgba(0,0,0,0.6);
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+
+    /* Volume + silent buttons */
+    .iphone::before {
+      content: '';
+      position: absolute;
+      left: -4px; top: 130px;
+      width: 4px; height: 34px;
+      background: #2a2a2c;
+      border-radius: 2px 0 0 2px;
+      box-shadow: 0 52px 0 #2a2a2c, 0 100px 0 #2a2a2c;
+    }
+    /* Power button */
+    .iphone::after {
+      content: '';
+      position: absolute;
+      right: -4px; top: 184px;
+      width: 4px; height: 80px;
+      background: #2a2a2c;
+      border-radius: 0 2px 2px 0;
+    }
+
+    /* ── Screen ── */
+    .screen {
+      position: absolute;
+      inset: 0;
+      border-radius: 54px;
+      overflow: hidden;
+    }
+
+    /* ── Scrollable area (clips + scrolls) ── */
+    .scroll-area {
+      position: absolute;
+      inset: 0;
+      border-radius: 54px;
+      overflow-y: scroll;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .scroll-area::-webkit-scrollbar { display: none; }
+
+    /* ── Site iframe ── */
+    .site-frame {
+      display: block;
+      width: 393px;
+      /* height set by JS to full content height */
+      height: 4000px;
+      border: none;
+      pointer-events: none; /* lets scroll events pass to .scroll-area */
+    }
+
+    /* ── Dynamic Island ── */
+    .dynamic-island {
+      position: absolute;
+      top: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 126px;
+      height: 37px;
+      background: #000;
+      border-radius: 999px;
+      z-index: 20;
+      pointer-events: none;
+    }
+
+    /* ── Status bar overlay ── */
+    .status-bar {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 59px;
+      z-index: 19;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      padding: 0 28px 8px;
+      pointer-events: none;
+      /* semi-transparent so site content shows through */
+      background: linear-gradient(to bottom, rgba(245,241,234,0.95) 70%, transparent);
+    }
+    .status-time {
+      font-size: 15px;
+      font-weight: 600;
+      color: #2c2e2b;
+      letter-spacing: -0.01em;
+    }
+    .status-icons {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+    .status-icons svg { fill: #2c2e2b; }
+
+    /* ── Home indicator ── */
+    .home-bar {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 134px; height: 5px;
+      background: rgba(0,0,0,0.25);
+      border-radius: 999px;
+      z-index: 20;
+      pointer-events: none;
+    }
+
+    /* ── Desktop comparison ── */
+    .desktop-section {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      padding: 0 32px 64px;
+    }
+    .desktop-label {
+      font-size: 11px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.2);
+    }
+    .desktop-browser {
+      width: 100%;
+      max-width: 960px;
+      background: #1e1e20;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.07);
+      box-shadow: 0 24px 48px -12px rgba(0,0,0,0.6);
+    }
+    .browser-chrome {
+      height: 44px;
+      background: #27272a;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .browser-dot { width: 12px; height: 12px; border-radius: 999px; }
+    .browser-url {
+      flex: 1;
+      margin: 0 8px;
+      background: rgba(255,255,255,0.07);
+      border-radius: 6px;
+      height: 26px;
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      font-size: 11px;
+      color: rgba(255,255,255,0.3);
+      letter-spacing: 0.02em;
+    }
+    .desktop-clip {
+      height: 200px;
+      overflow: hidden;
+      position: relative;
+    }
+    .desktop-clip iframe {
+      width: 1440px;
+      height: 900px;
+      border: none;
+      transform-origin: top left;
+      transform: scale(0.625);
+      pointer-events: none;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="topbar">
+    <span class="topbar-logo">L.</span>
+    <span class="topbar-title">Anteprima Mobile</span>
+    <span class="topbar-badge">iPhone 16 · 393 × 852</span>
+  </div>
+
+  <div class="stage">
+
+    <!-- ── iPhone ── -->
+    <div class="phone-wrap">
+      <div class="iphone">
+
+        <!-- Dynamic island -->
+        <div class="dynamic-island"></div>
+
+        <!-- Status bar (stays fixed, above scroll) -->
+        <div class="status-bar">
+          <span class="status-time">9:41</span>
+          <div class="status-icons">
+            <!-- signal bars -->
+            <svg width="17" height="12" viewBox="0 0 17 12">
+              <rect x="0" y="7" width="3" height="5" rx="1"/>
+              <rect x="4.5" y="5" width="3" height="7" rx="1" opacity=".6"/>
+              <rect x="9" y="2.5" width="3" height="9.5" rx="1" opacity=".4"/>
+              <rect x="13.5" y="0" width="3" height="12" rx="1" opacity=".2"/>
+            </svg>
+            <!-- wifi -->
+            <svg width="16" height="12" viewBox="0 0 16 12">
+              <circle cx="8" cy="11" r="1.5"/>
+              <path d="M4.5 7.5C5.8 6.2 6.9 5.6 8 5.6s2.2.6 3.5 1.9" stroke="#2c2e2b" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+              <path d="M1.5 4.2C3.3 2.4 5.5 1.4 8 1.4s4.7 1 6.5 2.8" stroke="#2c2e2b" stroke-width="1.8" fill="none" stroke-linecap="round" opacity=".5"/>
+            </svg>
+            <!-- battery -->
+            <svg width="26" height="12" viewBox="0 0 26 12">
+              <rect x=".6" y="1" width="21" height="10" rx="3" stroke="#2c2e2b" stroke-width="1.2" fill="none"/>
+              <rect x="22.5" y="3.5" width="3" height="5" rx="1.5" fill="#2c2e2b" opacity=".4"/>
+              <rect x="2" y="2.5" width="16" height="7" rx="2" fill="#2c2e2b"/>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Scrollable screen -->
+        <div class="scroll-area" id="scrollArea">
+          <iframe
+            id="siteFrame"
+            class="site-frame"
+            src="index.html"
+            title="Linda Moretti — Mobile Preview"
+            scrolling="no"
+          ></iframe>
+        </div>
+
+        <!-- Home bar -->
+        <div class="home-bar"></div>
+
+      </div>
+
+      <div class="phone-label">iPhone 16 Pro · 393 px</div>
+      <div class="scroll-hint">
+        <svg width="12" height="14" viewBox="0 0 12 14" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1.5" stroke-linecap="round">
+          <path d="M6 1v10M2 8l4 4 4-4"/>
+        </svg>
+        Scorri dentro il telefono
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Desktop strip -->
+  <div class="desktop-section">
+    <span class="desktop-label">Vista desktop a confronto</span>
+    <div class="desktop-browser">
+      <div class="browser-chrome">
+        <div class="browser-dot" style="background:#FF5F57"></div>
+        <div class="browser-dot" style="background:#FEBC2E"></div>
+        <div class="browser-dot" style="background:#28C840"></div>
+        <div class="browser-url">studiomoretti.it</div>
+      </div>
+      <div class="desktop-clip">
+        <iframe src="index.html" title="Desktop" scrolling="no"></iframe>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const frame = document.getElementById('siteFrame');
+    const area  = document.getElementById('scrollArea');
+
+    frame.addEventListener('load', () => {
+      try {
+        // Resize iframe to full content height so scroll-area can scroll through it all
+        const doc = frame.contentDocument || frame.contentWindow.document;
+        const setHeight = () => {
+          const h = Math.max(
+            doc.body.scrollHeight,
+            doc.documentElement.scrollHeight,
+            900
+          );
+          frame.style.height = h + 'px';
+        };
+        setHeight();
+        // Re-measure after fonts/images settle
+        setTimeout(setHeight, 800);
+        setTimeout(setHeight, 2000);
+      } catch(e) {
+        // fallback: just set a tall height
+        frame.style.height = '5000px';
+      }
+    });
+  </script>
+
+</body>
+</html>
