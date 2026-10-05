@@ -1,0 +1,67 @@
+(function () {
+  'use strict';
+
+  const EMAILJS_ENDPOINT = 'https://api.emailjs.com/api/v1.0/email/send-form';
+  const EMAILJS_SERVICE_ID = 'service_783kgxg';
+  const EMAILJS_TEMPLATE_ID = 'template_hta249a';
+  const EMAILJS_PUBLIC_KEY = 'cu242bHxuJwOAWtZO';
+
+  const form = document.getElementById('contact-form');
+  if (!form) return;
+
+  const submitButton = form.querySelector('button[type="submit"]');
+  const status = document.getElementById('form-status');
+  const honeypot = form.elements.website;
+  let isSending = false;
+
+  function showStatus(message, type) {
+    status.textContent = message;
+    status.classList.remove('is-success', 'is-error');
+    if (type) status.classList.add(`is-${type}`);
+  }
+
+  form.addEventListener('submit', async function (event) {
+    event.preventDefault();
+
+    if (isSending || !form.reportValidity()) return;
+
+    // I bot tendono a compilare anche questo campo nascosto.
+    if (honeypot && honeypot.value) {
+      form.reset();
+      showStatus('Grazie, la richiesta è stata inviata.', 'success');
+      return;
+    }
+
+    isSending = true;
+    submitButton.disabled = true;
+    form.setAttribute('aria-busy', 'true');
+    showStatus('Invio in corso…');
+
+    const formData = new FormData(form);
+    formData.append('service_id', EMAILJS_SERVICE_ID);
+    formData.append('template_id', EMAILJS_TEMPLATE_ID);
+    formData.append('user_id', EMAILJS_PUBLIC_KEY);
+    formData.append('sent_at', new Date().toLocaleString('it-IT'));
+
+    try {
+      const response = await fetch(EMAILJS_ENDPOINT, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error(`EmailJS ha risposto con stato ${response.status}`);
+      }
+
+      form.reset();
+      showStatus('Grazie, la richiesta è stata inviata. Ti risponderò entro 24 ore lavorative.', 'success');
+    } catch (error) {
+      console.error('Invio del modulo non riuscito:', error);
+      showStatus('Non è stato possibile inviare la richiesta. Riprova oppure scrivi a linda.cifaldi@live.it.', 'error');
+    } finally {
+      isSending = false;
+      submitButton.disabled = false;
+      form.removeAttribute('aria-busy');
+    }
+  });
+})();
