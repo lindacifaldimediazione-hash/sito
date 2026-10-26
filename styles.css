@@ -255,7 +255,7 @@ p { margin: 0; text-wrap: pretty; }
 }
 .hero-text { text-align: center; display: flex; flex-direction: column; align-items: center; }
 .hero-text h1, .hero-headline { text-align: center; }
-.hero-headline { font-family: var(--font-display); font-weight: 400; letter-spacing: -0.02em; margin: 0; color: var(--fg); text-wrap: balance; font-size: clamp(38px, 4.4vw, 62px); line-height: 1.08; }
+.hero-headline { font-family: var(--font-display); font-weight: 400; letter-spacing: -0.02em; margin: 0; color: var(--fg); text-wrap: balance; font-size: clamp(38px, 4.4vw, 48px); line-height: 1.08; }
 .hero-eyebrow {
   display: inline-flex;
   align-items: center;
@@ -281,6 +281,7 @@ p { margin: 0; text-wrap: pretty; }
   color: var(--fg-soft);
   max-width: 500px;
   line-height: 1.6;
+  text-align: justify;
 }
 .hero-lede + .hero-lede { margin-top: 14px; font-size: 17px; }
 .hero-actions {
@@ -435,9 +436,8 @@ section[data-band="even"] {
 .blob:hover { transform: translateY(-3px); box-shadow: 0 12px 32px -16px rgba(0,0,0,0.12); }
 .blob h3, .blob h4 { font-size: 17px; font-weight: 500; margin-bottom: 8px; }
 .blob p { font-size: 14px; color: var(--fg-soft); line-height: 1.55; }
-.blob ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
-.blob ul li { font-size: 14px; line-height: 1.45; color: var(--fg-soft); display: flex; gap: 10px; align-items: flex-start; }
-.blob ul li::before { content: ''; width: 7px; height: 7px; background: var(--accent); flex-shrink: 0; margin-top: 6px; }
+.blob ul { list-style: disc; margin: 0; padding-left: 1rem; display: grid; gap: 10px; }
+.blob ul li { font-size: 14px; line-height: 1.45; color: var(--fg-soft); gap: 10px; align-items: flex-start; }
 @media (max-width: 1000px) { .blobs { grid-template-columns: repeat(2, 1fr); gap: 24px; } }
 @media (max-width: 560px) { .blobs { grid-template-columns: 1fr; } }
 .princ-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 2px; overflow: hidden; }
@@ -480,6 +480,7 @@ section[data-band="even"] {
   font-size: 14px;
   color: var(--fg-soft);
   line-height: 1.55;
+  text-align: justify;
 }
 
 /* ===== Testimonianze ===== */
